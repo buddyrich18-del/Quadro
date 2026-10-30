@@ -1,0 +1,50 @@
+feature,area,priority,original,clone,notes
+Aggiungere un account con scansione QR,account,must,yes,partial,"scritto; mai compilato né provato; formato del QR non verificato, c'è l'inserimento manuale"
+Aggiungere un account con URL; read API key e opzione SSL,account,must,yes,partial,"scritto; mai compilato né provato; HTTP/HTTPS si deduce dall'indirizzo, niente interruttore SSL"
+Più account su server diversi,account,must,yes,partial,scritto; mai compilato né provato
+Pagine My Electric multiple con swipe,myelectric,must,yes,no,sostituito da schede in elenco verticale
+Potenza adesso e consumo di oggi,myelectric,must,yes,partial,scritto; mai compilato né provato
+Grafico potenza con pinch-zoom,myelectric,must,yes,partial,"scritto; mai compilato né provato; tocca e tieni premuto per i valori, niente pinch-zoom"
+Pulsanti periodo 3H 6H giorno settimana mese,myelectric,must,yes,partial,scritto; mai compilato né provato
+Barre kWh per giorno,myelectric,must,yes,partial,scritto; mai compilato né provato; ultimi 14 giorni
+Interruttore kWh / costo,myelectric,must,yes,partial,scritto; mai compilato né provato
+Costo per kWh con valuta (sistema; dollari; sterline; euro; yen; personalizzata),myelectric,must,yes,partial,"scritto; mai compilato né provato; simbolo libero, non l'elenco di valute"
+Scelta del feed potenza e del feed kWh o Wh per pagina,myelectric,must,yes,partial,scritto; mai compilato né provato
+Chiavi API in archivio cifrato del telefono,sicurezza,must,no,partial,scritto; mai compilato né provato
+Pagina My Solar con produzione solare,mysolar,should,yes,no,
+Schermo intero,myelectric,should,yes,no,
+Schermo sempre acceso,impostazioni,should,yes,partial,scritto; mai compilato né provato
+Interfaccia in 8 lingue incluso l'italiano,i18n,should,yes,no,EN FR DE IT NL ES PT UK
+Versione dell'app nelle impostazioni,info,should,yes,partial,scritto; mai compilato né provato
+Eliminare pagina o account con conferma,account,should,yes,partial,scritto; mai compilato né provato; elimina senza chiedere conferma
+Messaggi di errore guidati (server non configurato; feed non valido; connessione),errori,should,yes,partial,scritto; mai compilato né provato
+Layout orizzontale dedicato,layout,should,yes,no,
+Più fasce tariffarie per pagina (giorno/notte),myelectric,should,no,no,citata nel blog v2; assente nelle stringhe della v2.3.3: da verificare
+Impostazione AUTO dei feed (use / use_kwh),myelectric,should,no,no,citata nel forum; assente nelle stringhe della v2.3.3: da verificare
+Duplicare una pagina o ricordare il costo,myelectric,should,no,no,richiesta degli utenti sul forum
+Elenco feed con ultimo valore e ora,feed,should,no,partial,solo come scelta feed negli editor
+Visualizzatore grafici multi-feed con preset di periodo,grafici,should,no,partial,schede grafico con fino a 4 serie; scritto; mai compilato né provato
+Vista dashboard (vista web con chiave),dashboard,should,no,no,aggiunta; nessuna API documentata
+Elenco input e device con ultimo aggiornamento,device,should,no,no,aggiunta
+Widget nella schermata home,widget,could,no,no,richiesta degli utenti
+Cache offline degli ultimi dati,offline,could,no,no,
+Vista My Electric Flow,app,could,no,no,aggiunta; richiede feed use solar battery grid
+Vista My Heatpump,app,could,no,no,aggiunta
+Esportazione CSV di un feed,grafici,could,no,no,aggiunta
+Grafici salvati,grafici,could,no,partial,ogni scheda grafico è un grafico salvato
+Invio di valori da telefono (input/post),input,could,no,no,aggiunta; serve write key
+Pagina My Heating,myheating,could,no,no,voce di menu nell'originale ma nessuna schermata trovata
+Server Emoncms (PHP e database),server,could,yes,skip,è il loro prodotto
+Servizio emoncms.org e account ospitati,server,could,yes,skip,servizio loro
+Hardware e firmware (emonPi emonTx emonHub),hardware,could,yes,skip,non clonabile in un'app
+Tariffe Octopus Agile e dati rete UK,dati,could,yes,skip,dati di terzi
+HeatpumpMonitor.org (dati della community),dati,could,yes,skip,la rete e i dati sono loro
+Libreria di template device,device,could,yes,skip,mantenuta da OpenEnergyMonitor
+Editor input processing e motori feed,admin,could,yes,skip,amministrazione server; usare la versione web
+Moduli Post Process / DemandShaper / Sync,admin,could,yes,skip,moduli server
+Grafico personalizzato a linee o barre (richiesto),grafici,must,no,partial,richiesto dall'utente; scritto; mai compilato né provato
+Temperatura e umidità: valori attuali; tendenza; fasce comfort; punto di rugiada (richiesto),clima,must,no,partial,richiesto dall'utente; scritto; mai compilato né provato
+Avvisi con notifica per soglie di temperatura e umidità (richiesto),clima,must,no,partial,richiesto; controllo circa ogni 15 min; scritto; mai compilato né provato
+Serie da link pubblico JSON o CSV (richiesto),sorgenti,must,no,partial,richiesto dall'utente; scritto; mai compilato né provato
+"Scheda con pagina web, es. link FusionSolar (richiesto)",sorgenti,must,no,partial,mostra la pagina; non ne estrae i numeri; scritto; mai compilato né provato
+APK installabile tramite GitHub Actions (richiesto),build,must,no,partial,workflow scritto; non eseguito

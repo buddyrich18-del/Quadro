@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  HTTP in chiaro è consentito perché un server Emoncms in rete locale (per esempio un emonPi)
+  spesso non ha HTTPS. L'editor dei server avvisa quando l'indirizzo non usa HTTPS.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
