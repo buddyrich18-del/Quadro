@@ -28,7 +28,7 @@ Nell'editor della serie scegli "Link pubblico". Per il JSON indica il percorso d
 - **Avvisi:** Android non garantisce l'orario esatto; il controllo è circa ogni 15 minuti, e solo se il telefono ha rete. Su Android 13+ l'app chiede il permesso per le notifiche. Con il risparmio energetico molto aggressivo possono ritardare.
 - **Sicurezza:** le chiavi sono in archivio cifrato e viaggiano nell'header `Authorization`, non nell'indirizzo. HTTP in chiaro è consentito perché un emonPi in rete locale spesso non ha HTTPS; l'editor ti avvisa.
 - **Barre giornaliere:** si calcolano sommando consumi orari sul fuso del telefono. Per fusi con mezz'ora di scarto le barre possono essere sfalsate.
-- **Pagina web:** la scheda esegue JavaScript (serve a FusionSolar) ed è limitata a indirizzi https.
+- **Pagina web:** la scheda esegue JavaScript ed è limitata a indirizzi https.
 
 ## Struttura
 
