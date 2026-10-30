@@ -12,17 +12,6 @@ Non è un'app ufficiale di Emoncms né di FusionSolar.
 - **Sorgenti:** feed di un server Emoncms (chiave di sola lettura) oppure qualunque link pubblico che restituisca JSON o CSV.
 - **Pagina web:** mostra un link (https) dentro l'app. Non ne estrae i numeri.
 
-## Come ottenere l'APK (senza installare nulla sul PC)
-
-1. Crea un repository GitHub (anche privato) e carica tutto il contenuto di questa cartella.
-2. Apri la scheda **Actions**, scegli **Build APK** e premi **Run workflow** (parte anche a ogni push).
-3. A lavoro finito, scarica l'artefatto **quadro-debug-apk** (dentro c'è `app-debug.apk`).
-4. Sul telefono: copia il file, aprilo e consenti l'installazione da fonti sconosciute quando richiesto.
-
-Il workflow esegue prima i test del modulo `core` e poi compila. Se un test fallisce, l'APK non viene prodotto e il rapporto è nell'artefatto **quadro-test-report**.
-
-In alternativa: apri la cartella con Android Studio e usa Build → Build APK.
-
 L'APK è firmato con la chiave di debug: va bene per uso personale, non per il Play Store.
 
 ## Primo avvio
