@@ -23,10 +23,6 @@ L'APK è firmato con la chiave di debug: va bene per uso personale, non per il P
 
 Nell'editor della serie scegli "Link pubblico". Per il JSON indica il percorso dell'elenco (es. `data.points`, vuoto se la radice è già un elenco) e le chiavi di tempo e valore; per gli elenchi di coppie `[tempo, valore]` usa le posizioni 0 e 1. Per il CSV indica nome o posizione delle colonne. Tempi accettati: secondi o millisecondi Unix, ISO-8601, `gg/mm/aaaa hh:mm`.
 
-### FusionSolar
-
-Il link kiosk è una pagina web, non un'API: qui si può **mostrare** con la scheda "Pagina web". Per ottenere numeri da usare nei grafici serve una fonte JSON/CSV (per esempio l'API ufficiale Huawei, con le credenziali del tuo impianto, o un tuo servizio che la esponga). Chi ha il link kiosk vede i dati dell'impianto: non condividerlo.
-
 ## Cose da sapere
 
 - **Avvisi:** Android non garantisce l'orario esatto; il controllo è circa ogni 15 minuti, e solo se il telefono ha rete. Su Android 13+ l'app chiede il permesso per le notifiche. Con il risparmio energetico molto aggressivo possono ritardare.
