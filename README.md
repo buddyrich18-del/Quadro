@@ -34,10 +34,6 @@ Il link kiosk è una pagina web, non un'API: qui si può **mostrare** con la sch
 - **Barre giornaliere:** si calcolano sommando consumi orari sul fuso del telefono. Per fusi con mezz'ora di scarto le barre possono essere sfalsate.
 - **Pagina web:** la scheda esegue JavaScript (serve a FusionSolar) ed è limitata a indirizzi https.
 
-## Stato della verifica
-
-I 32 test del modulo `core` sono stati scritti e riletti, ma **non eseguiti** dove è stato creato il progetto (rete limitata). L'interfaccia non è mai stata compilata né provata su un telefono: al primo avvio del workflow potrebbero esserci errori di compilazione da correggere.
-
 ## Struttura
 
 - `core/`: logica in Kotlin puro e testata (parser, statistiche, punto di rugiada, soglie con isteresi, URL Emoncms, configurazione).
