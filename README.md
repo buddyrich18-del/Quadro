@@ -2,7 +2,7 @@
 
 App Android per tenere d'occhio consumi, temperatura e umidità: legge un server Emoncms, link pubblici JSON/CSV e mostra pagine web (per esempio un link FusionSolar).
 
-Non è un'app ufficiale di Emoncms né di FusionSolar. Il nome "Quadro" è provvisorio: prima di pubblicarla controlla marchio e nome sullo store.
+Non è un'app ufficiale di Emoncms né di FusionSolar.
 
 ## Cosa fa
 
