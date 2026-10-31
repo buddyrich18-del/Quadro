@@ -1,46 +1,46 @@
 # Quadro
 
-App Android per tenere d'occhio consumi, temperatura e umidità: legge un server Emoncms, link pubblici JSON/CSV e mostra pagine web (per esempio un link FusionSolar).
+An Android app for keeping an eye on energy use, temperature and humidity: it reads an Emoncms server and public JSON/CSV links, and shows web pages (for example a FusionSolar link).
 
-Non è un'app ufficiale di Emoncms né di FusionSolar.
+It is not an official Emoncms or FusionSolar app.
 
-## Cosa fa
+## What it does
 
-- **Energia:** potenza adesso, consumo di oggi, grafico a linee con 3H/6H/D/W/M, barre dei kWh giornalieri, interruttore kWh/costo.
-- **Grafico personalizzato:** linee (fino a 4 serie) o barre, raggruppamento per ora o giorno, media/somma/min/max, asse regolabile. Tocca e tieni premuto per leggere i valori.
-- **Temperatura e umidità:** valori attuali con tendenza scritta (in aumento, stabile, in calo), fascia comfort indicata sotto ogni valore, didascalie sopra i grafici (unità e zona verde), avvisi con notifica quando si esce dai limiti.
-- **Sorgenti:** feed di un server Emoncms (chiave di sola lettura) oppure qualunque link pubblico che restituisca JSON o CSV.
-- **Fotovoltaico / pagina web:** se il link è FusionSolar, l'app legge dalla pagina cinque valori e li mostra a riquadri con queste didascalie, in ordine: Potenza in tempo reale, Resa di oggi, Resa del mese, Resa dell'anno, Resa totale. Per qualsiasi altro link mostra solo la pagina web.
-- **Una scheda alla volta:** in alto scegli la scheda da vedere; con ← e → ne cambi l'ordine.
-- **Grafici a linee:** tratto deciso con angoli vivi, area chiara sotto la linea e griglia leggera. Il colore si sceglie per ogni serie (e per la scheda Energia).
-- **Aspetto e lingua:** in Server e impostazioni scegli sfondo chiaro, scuro o automatico, dimensione del testo e lingua (italiano, inglese o come il telefono).
-- **Salvaschermo:** dopo 1, 5, 15 o 30 minuti senza tocchi mostra un fondo nero con l'ora (cambia posizione ogni minuto) e abbassa la luminosità al livello che scegli (da 1 a 100%). In alternativa può alternare le schede create con l'intervallo che scegli, da 10 secondi a 5 minuti (serve più di una scheda), con dissolvenza al nero a ogni cambio. A schermo intero (opzione) nasconde barre del telefono, titolo e pulsanti. Un tocco lo chiude. Utile con "Schermo sempre acceso".
+- **Energy:** current power, today's consumption, line chart with 3H/6H/D/W/M, daily kWh bars, kWh/cost switch.
+- **Custom chart:** lines (up to 4 series) or bars, grouping by hour or day, average/sum/min/max, adjustable axis. Touch and hold to read the values.
+- **Temperature and humidity:** current values with a written trend (rising, steady, falling), the comfort range shown under each value, captions above the charts (unit and green area), notifications when values leave the limits.
+- **Sources:** feeds from an Emoncms server (read-only key) or any public link that returns JSON or CSV.
+- **Solar / web page:** if the link is FusionSolar, the app reads five values from the page and shows them as tiles with these captions, in order: Real-time power, Yield today, Yield this month, Yield this year, Total yield. For any other link it shows only the web page.
+- **One card at a time:** choose the card to view at the top; use ← and → to change their order.
+- **Line charts:** bold stroke with sharp corners, a light area under the line and a faint grid. The colour is chosen per series (and for the Energy card).
+- **Appearance and language:** in Servers and settings choose a light, dark or automatic background, the text size and the language (Italian, English or as the phone).
+- **Screensaver:** after 1, 5, 15 or 30 minutes without touches it shows a black background with the time (moving position every minute) and lowers the brightness to the level you choose (1 to 100%). Alternatively it can cycle through the cards you created at the interval you choose, from 10 seconds to 5 minutes (more than one card is needed), with a fade to black at each change. In full-screen mode (optional) it hides the phone bars, the title and the buttons. A touch closes it. Useful with "Keep screen on".
 
-L'APK è firmato con la chiave di debug: va bene per uso personale, non per il Play Store.
+The APK is signed with the debug key: fine for personal use, not for the Play Store.
 
-## Primo avvio
+## First start
 
-1. **Server → Aggiungi un server.** Indirizzo (es. `emonpi.local` o `emoncms.org`) e chiave API di sola lettura dalla pagina Account di Emoncms. Il pulsante QR prova a leggere il codice della pagina Account; se non lo riconosce, inserisci i dati a mano. Con **Prova la connessione** controlli subito che funzioni.
-2. **+ Scheda** e scegli il tipo.
+1. **Servers → Add a server.** Address (e.g. `emonpi.local` or `emoncms.org`) and the read-only API key from the Emoncms Account page. The QR button tries to read the code on the Account page; if it does not recognise it, enter the details by hand. **Test the connection** checks right away that it works.
+2. **+ Card** and choose the type.
 
-### Link pubblici (JSON o CSV)
+### Public links (JSON or CSV)
 
-Nell'editor della serie scegli "Link pubblico". Per il JSON indica il percorso dell'elenco (es. `data.points`, vuoto se la radice è già un elenco) e le chiavi di tempo e valore; per gli elenchi di coppie `[tempo, valore]` usa le posizioni 0 e 1. Per il CSV indica nome o posizione delle colonne. Tempi accettati: secondi o millisecondi Unix, ISO-8601, `gg/mm/aaaa hh:mm`.
+In the series editor choose "Public link". For JSON give the path of the list (e.g. `data.points`, empty if the root is already a list) and the time and value keys; for lists of `[time, value]` pairs use positions 0 and 1. For CSV give the name or position of the columns. Accepted times: Unix seconds or milliseconds, ISO-8601, `dd/mm/yyyy hh:mm`.
 
 ### FusionSolar
 
-Il link kiosk è una pagina web, non un'API. La scheda "Fotovoltaico / pagina web" la apre in una vista nascosta, legge i testi visibili con la loro posizione e abbina ogni numero con unità (kW, kWh, %, ecc.) all'etichetta più vicina. Non usa chiamate interne di Huawei né credenziali: legge quello che vedresti aprendo il link.
+The kiosk link is a web page, not an API. The "Solar / web page" card opens it in a hidden view, reads the visible text with its position and matches each number with a unit (kW, kWh, %, etc.) to the nearest label. It uses no internal Huawei calls and no credentials: it reads what you would see by opening the link.
 
-Limiti: è un'euristica tarata senza aver visto la pagina vera. I grafici disegnati dalla pagina non si leggono, solo i testi. Se Huawei cambia la pagina può servire una taratura. Per grafici con storico serve una fonte JSON/CSV (per esempio l'API ufficiale Huawei con le credenziali del tuo impianto). Chi ha il link kiosk vede i dati dell'impianto: non condividerlo.
+Limits: it is a heuristic tuned without seeing the real page. Charts drawn by the page cannot be read, only text. If Huawei changes the page, it may need retuning. For charts with history you need a JSON/CSV source (for example the official Huawei API with your plant's credentials). Anyone with the kiosk link can see the plant's data: do not share it.
 
-## Cose da sapere
+## Good to know
 
-- **Avvisi:** Android non garantisce l'orario esatto; il controllo è circa ogni 15 minuti, e solo se il telefono ha rete. Su Android 13+ l'app chiede il permesso per le notifiche. Con il risparmio energetico molto aggressivo possono ritardare.
-- **Sicurezza:** le chiavi sono in archivio cifrato e viaggiano nell'header `Authorization`, non nell'indirizzo. HTTP in chiaro è consentito perché un emonPi in rete locale spesso non ha HTTPS; l'editor ti avvisa.
-- **Barre giornaliere:** si calcolano sommando consumi orari sul fuso del telefono. Per fusi con mezz'ora di scarto le barre possono essere sfalsate.
-- **Pagina web:** la scheda esegue JavaScript (serve a FusionSolar) ed è limitata a indirizzi https. I valori si rileggono ogni 5 minuti.
+- **Alerts:** Android does not guarantee the exact time; the check runs about every 15 minutes, and only if the phone has a network connection. On Android 13+ the app asks for notification permission. With very aggressive battery saving they may be delayed.
+- **Security:** keys are stored in an encrypted store and travel in the `Authorization` header, not in the address. Plain HTTP is allowed because an emonPi on a local network often has no HTTPS; the editor warns you.
+- **Daily bars:** they are computed by summing hourly consumption in the phone's time zone. For time zones with a half-hour offset the bars may be shifted.
+- **Web page:** the card runs JavaScript (needed for FusionSolar) and is limited to https addresses. Values are re-read every 5 minutes.
 
-## Struttura
+## Structure
 
-- `core/`: logica in Kotlin puro e testata (parser, statistiche, lettura dei valori da pagine web, soglie con isteresi, URL Emoncms, configurazione).
-- `app/`: interfaccia Jetpack Compose, grafici disegnati a mano, archivio cifrato delle chiavi, avvisi con WorkManager.
+- `core/`: tested, pure Kotlin logic (parsers, statistics, reading values from web pages, thresholds with hysteresis, Emoncms URLs, configuration).
+- `app/`: Jetpack Compose interface, hand-drawn charts, encrypted key store, alerts with WorkManager.
