@@ -35,6 +35,7 @@ import app.quadro.core.KioskItem
 import app.quadro.core.fusionSolarTiles
 import app.quadro.core.WebCard
 import app.quadro.core.parseKioskFragments
+import app.quadro.core.parseSolarValues
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONTokener
@@ -154,13 +155,14 @@ fun KioskView(card: WebCard) {
                 delay(2500)
                 val json = readPage(webView) ?: continue
                 val parsed = parseKioskFragments(json)
+                val solar = parseSolarValues(json)
                 lines = parsed.lines
-                if (parsed.items.isNotEmpty()) {
-                    items = parsed.items
+                if (solar.isNotEmpty()) {
+                    items = solar
                     updated = System.currentTimeMillis()
                     found = true
                     gaveUp = false
-                    val signature = parsed.items.joinToString("|") { it.label + it.value + it.unit }
+                    val signature = solar.joinToString("|") { it.label + it.value + it.unit }
                     if (signature == last) break
                     last = signature
                 }

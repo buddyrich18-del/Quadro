@@ -220,3 +220,43 @@ fun fusionSolarTiles(items: List<KioskItem>): List<SolarTile> {
         SolarTile(caption, if (i == 0) power else chosen[i - 1])
     }
 }
+
+private val SOLAR_VALUE = Regex("(\\d[\\d.,]*)\\s*(GWh|MWh|kWh|Wh|GW|MW|kW|W)(?![A-Za-z])")
+
+/**
+ * Per le pagine FusionSolar: legge tutti i numeri con unità di potenza o energia nell'ordine in cui
+ * compaiono (righe dall'alto in basso, da sinistra a destra). Le etichette sono vuote perché la pagina
+ * mostra i valori in una riga e i nomi in un'altra: l'abbinamento lo fa fusionSolarTiles per posizione.
+ */
+fun parseSolarValues(json: String): List<KioskItem> {
+    val arr = try {
+        Json.parseToJsonElement(json) as? JsonArray
+    } catch (e: Exception) {
+        null
+    } ?: return emptyList()
+    val frags = ArrayList<Frag>()
+    for (el in arr) {
+        val a = el as? JsonArray ?: continue
+        if (a.size < 5) continue
+        val text = (a[0] as? JsonPrimitive)?.content?.replace(Regex("\\s+"), " ")?.trim() ?: continue
+        if (text.isEmpty()) continue
+        val n = (1..4).map { (a[it] as? JsonPrimitive)?.doubleOrNull }
+        if (n.any { it == null }) continue
+        frags.add(Frag(text, n[0]!!, n[1]!!, n[2]!!, n[3]!!))
+    }
+    val rows = ArrayList<MutableList<Frag>>()
+    for (f in frags.sortedWith(compareBy({ it.top }, { it.left }))) {
+        val row = rows.lastOrNull()
+        if (row != null && abs(f.cy - row.first().cy) <= 0.6 * max(f.height, row.maxOf { it.height })) {
+            row.add(f)
+        } else {
+            rows.add(mutableListOf(f))
+        }
+    }
+    val out = ArrayList<KioskItem>()
+    for (row in rows) {
+        val text = row.sortedBy { it.left }.joinToString(" ") { it.text }
+        for (m in SOLAR_VALUE.findAll(text)) out.add(KioskItem("", m.groupValues[1], m.groupValues[2]))
+    }
+    return out
+}

@@ -407,3 +407,32 @@ class SolarTest {
         assertNull(t[1].item)
     }
 }
+
+class SolarPageTest {
+    private fun frag(t: String, top: Int, left: Int) = """["$t",$top,$left,20,60]"""
+
+    @Test
+    fun valuesOnOneRowAreReadInOrderAndMappedToCaptions() {
+        val json = "[" + listOf(
+            frag("Accedi", 10, 300),
+            frag("0.31", 100, 20), frag("kW", 104, 80), frag("0.00", 100, 140), frag("kWh", 104, 200),
+            frag("365.41", 100, 260), frag("kWh", 104, 340), frag("6.07", 99, 400), frag("MWh", 104, 460),
+            frag("8.74", 100, 520), frag("MWh", 104, 580),
+            frag("Potenza in tempo reale", 150, 20), frag("Resa totale", 150, 520),
+            frag("4.15", 300, 20), frag("Panoramica", 400, 20),
+        ).joinToString(",") + "]"
+        val values = parseSolarValues(json)
+        assertEquals(listOf("0.31", "0.00", "365.41", "6.07", "8.74"), values.map { it.value })
+        val t = fusionSolarTiles(values)
+        assertEquals("8.74", t[4].item?.value)
+        assertEquals("MWh", t[4].item?.unit)
+        assertEquals("kW", t[0].item?.unit)
+        assertEquals("365.41", t[2].item?.value)
+    }
+
+    @Test
+    fun capacityInKwpIsNotAValue() {
+        val json = "[" + frag("12.5 kWp", 10, 10) + "]"
+        assertTrue(parseSolarValues(json).isEmpty())
+    }
+}
