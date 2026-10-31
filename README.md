@@ -2,7 +2,7 @@
 
 App Android per tenere d'occhio consumi, temperatura e umidità: legge un server Emoncms, link pubblici JSON/CSV e mostra pagine web (per esempio un link FusionSolar).
 
-Non è un'app ufficiale di Emoncms né di FusionSolar. Il nome "Quadro" è provvisorio: prima di pubblicarla controlla marchio e nome sullo store.
+Non è un'app ufficiale di Emoncms né di FusionSolar.
 
 ## Cosa fa
 
@@ -15,17 +15,6 @@ Non è un'app ufficiale di Emoncms né di FusionSolar. Il nome "Quadro" è provv
 - **Grafici a linee:** tratto deciso con angoli vivi, area chiara sotto la linea e griglia leggera. Il colore si sceglie per ogni serie (e per la scheda Energia).
 - **Aspetto e lingua:** in Server e impostazioni scegli sfondo chiaro, scuro o automatico, dimensione del testo e lingua (italiano, inglese o come il telefono).
 - **Salvaschermo:** dopo 1, 5, 15 o 30 minuti senza tocchi mostra un fondo nero con l'ora (cambia posizione ogni minuto) e abbassa la luminosità al livello che scegli (da 1 a 100%). In alternativa può alternare le schede create con l'intervallo che scegli, da 10 secondi a 5 minuti (serve più di una scheda), con dissolvenza al nero a ogni cambio. A schermo intero (opzione) nasconde barre del telefono, titolo e pulsanti. Un tocco lo chiude. Utile con "Schermo sempre acceso".
-
-## Come ottenere l'APK (senza installare nulla sul PC)
-
-1. Crea un repository GitHub (anche privato) e carica tutto il contenuto di questa cartella.
-2. Apri la scheda **Actions**, scegli **Build APK** e premi **Run workflow** (parte anche a ogni push).
-3. A lavoro finito, scarica l'artefatto **quadro-debug-apk** (dentro c'è `app-debug.apk`).
-4. Sul telefono: copia il file, aprilo e consenti l'installazione da fonti sconosciute quando richiesto.
-
-Il workflow esegue prima i test del modulo `core` e poi compila. Se un test fallisce, l'APK non viene prodotto e il rapporto è nell'artefatto **quadro-test-report**.
-
-In alternativa: apri la cartella con Android Studio e usa Build → Build APK.
 
 L'APK è firmato con la chiave di debug: va bene per uso personale, non per il Play Store.
 
@@ -50,10 +39,6 @@ Limiti: è un'euristica tarata senza aver visto la pagina vera. I grafici disegn
 - **Sicurezza:** le chiavi sono in archivio cifrato e viaggiano nell'header `Authorization`, non nell'indirizzo. HTTP in chiaro è consentito perché un emonPi in rete locale spesso non ha HTTPS; l'editor ti avvisa.
 - **Barre giornaliere:** si calcolano sommando consumi orari sul fuso del telefono. Per fusi con mezz'ora di scarto le barre possono essere sfalsate.
 - **Pagina web:** la scheda esegue JavaScript (serve a FusionSolar) ed è limitata a indirizzi https. I valori si rileggono ogni 5 minuti.
-
-## Stato della verifica
-
-La prima versione è stata compilata dal workflow e installata. Le modifiche successive (una scheda alla volta, tema e testo, lettura dei dati fotovoltaico, lingua, nuovo stile dei grafici) sono state scritte e riviste a mano ma **non compilate né provate**; i test del modulo `core` (48) non sono stati eseguiti dove è stato scritto il codice. La lettura della pagina FusionSolar non è mai stata vista su una pagina reale.
 
 ## Struttura
 
