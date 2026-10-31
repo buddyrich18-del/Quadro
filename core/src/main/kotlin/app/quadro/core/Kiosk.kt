@@ -180,3 +180,43 @@ fun parseKioskFragments(json: String): KioskResult {
     }
     return KioskResult(items, clusters.map { it.text })
 }
+
+/** Vero se l'indirizzo è una pagina FusionSolar (per esempio il link kiosk pubblico). */
+fun isFusionSolarUrl(url: String): Boolean =
+    Regex("^https?://[^/]*fusionsolar[^/]*", RegexOption.IGNORE_CASE).containsMatchIn(url.trim())
+
+/** Un riquadro della scheda FusionSolar: didascalia fissa e valore letto dalla pagina (null se non trovato). */
+data class SolarTile(val caption: String, val item: KioskItem?)
+
+val SOLAR_CAPTIONS = listOf(
+    "Potenza in tempo reale",
+    "Resa di oggi",
+    "Resa del mese",
+    "Resa dell'anno",
+    "Resa totale",
+)
+
+private val SOLAR_KEYS = listOf(
+    listOf("today", "daily", "day", "oggi", "giorn", "当日", "今日"),
+    listOf("month", "mese", "mensil", "当月"),
+    listOf("year", "anno", "annu", "当年"),
+    listOf("total", "totale", "lifetime", "cumul", "总"),
+)
+
+/**
+ * Abbina i valori letti dalla pagina alle cinque didascalie, in ordine: potenza, oggi, mese, anno, totale.
+ * Si usano le parole dell'etichetta (inglese o italiano) se permettono di riconoscere tutte e quattro le rese;
+ * altrimenti si prendono i valori di energia nell'ordine in cui compaiono nella pagina.
+ */
+fun fusionSolarTiles(items: List<KioskItem>): List<SolarTile> {
+    val power = items.firstOrNull { unitCategory(it.unit) == UnitCategory.POWER }
+    val energy = items.filter { unitCategory(it.unit) == UnitCategory.ENERGY }
+    val byKey = SOLAR_KEYS.map { keys ->
+        energy.firstOrNull { e -> keys.any { e.label.lowercase().contains(it) } }
+    }
+    val chosen: List<KioskItem?> =
+        if (byKey.all { it != null } && byKey.toSet().size == 4) byKey else List(4) { energy.getOrNull(it) }
+    return SOLAR_CAPTIONS.mapIndexed { i, caption ->
+        SolarTile(caption, if (i == 0) power else chosen[i - 1])
+    }
+}

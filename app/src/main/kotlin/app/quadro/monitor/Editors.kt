@@ -56,6 +56,7 @@ import app.quadro.core.SeriesRef
 import app.quadro.core.Source
 import app.quadro.core.AppLanguage
 import app.quadro.core.ThemeMode
+import app.quadro.core.isFusionSolarUrl
 import app.quadro.core.WebCard
 import app.quadro.core.normalizeBaseUrl
 import app.quadro.core.parseAccountQr
@@ -506,7 +507,6 @@ fun EnergyEditor(initial: EnergyCard?, cfg: AppConfig, onSave: (CardConfig) -> U
 fun WebEditor(initial: WebCard?, onSave: (CardConfig) -> Unit, onDelete: (() -> Unit)?, onBack: () -> Unit) {
     var title by remember { mutableStateOf(initial?.title ?: "Fotovoltaico") }
     var url by remember { mutableStateOf(initial?.url ?: "https://") }
-    var extract by remember { mutableStateOf(initial?.extract ?: true) }
     var error by remember { mutableStateOf<String?>(null) }
     EditorFrame(
         title = if (initial == null) "Nuova scheda fotovoltaico / web" else "Modifica scheda fotovoltaico / web",
@@ -520,16 +520,15 @@ fun WebEditor(initial: WebCard?, onSave: (CardConfig) -> Unit, onDelete: (() -> 
             } else if (!u.startsWith("https://") || u.length < 12) {
                 error = "Usa un indirizzo che inizia con https://"
             } else {
-                onSave(WebCard(initial?.id ?: UUID.randomUUID().toString(), title.trim(), u, extract))
+                onSave(WebCard(initial?.id ?: UUID.randomUUID().toString(), title.trim(), u, isFusionSolarUrl(u)))
             }
         },
     ) {
         Field("Titolo", title) { title = it }
         Field("Indirizzo della pagina (es. il link pubblico di FusionSolar)", url) { url = it }
-        SwitchRow("Leggi i valori dalla pagina e mostrali a riquadri", extract) { extract = it }
         Text(
-            if (extract) "L'app apre la pagina in background, legge i testi che mostra (potenza, energia, ecc.) e li ordina per potenza ed energia. Se la pagina cambia o non viene riconosciuta, puoi sempre vedere la pagina originale e il testo letto."
-            else "Mostra la pagina così com'è dentro l'app.",
+            if (isFusionSolarUrl(url)) "Link FusionSolar riconosciuto: l'app legge dalla pagina potenza in tempo reale e rese (oggi, mese, anno, totale) e le mostra a riquadri. La pagina originale resta consultabile."
+            else "Per questo indirizzo l'app mostra solo la pagina web.",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }

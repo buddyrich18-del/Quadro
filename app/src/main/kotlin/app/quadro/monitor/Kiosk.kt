@@ -32,10 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import app.quadro.core.KioskItem
-import app.quadro.core.UnitCategory
+import app.quadro.core.fusionSolarTiles
 import app.quadro.core.WebCard
 import app.quadro.core.parseKioskFragments
-import app.quadro.core.unitCategory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONTokener
@@ -103,12 +102,15 @@ private fun KioskTile(item: KioskItem, modifier: Modifier) {
 }
 
 @Composable
-private fun KioskGroup(title: String, items: List<KioskItem>) {
-    if (items.isEmpty()) return
-    Text(title, style = MaterialTheme.typography.titleSmall)
-    items.chunked(2).forEach { pair ->
+private fun SolarTiles(items: List<KioskItem>) {
+    fusionSolarTiles(items).chunked(2).forEach { pair ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            pair.forEach { KioskTile(it, Modifier.weight(1f)) }
+            pair.forEach { t ->
+                KioskTile(
+                    KioskItem(t.caption, t.item?.value ?: "—", t.item?.unit ?: ""),
+                    Modifier.weight(1f),
+                )
+            }
             if (pair.size == 1) Spacer(Modifier.weight(1f))
         }
     }
@@ -183,9 +185,7 @@ fun KioskView(card: WebCard) {
                 }
             }
         } else {
-            KioskGroup("Potenza", items.filter { unitCategory(it.unit) == UnitCategory.POWER })
-            KioskGroup("Energia", items.filter { unitCategory(it.unit) == UnitCategory.ENERGY })
-            KioskGroup("Altro", items.filter { unitCategory(it.unit) == UnitCategory.OTHER })
+            SolarTiles(items)
             updated?.let {
                 Text(
                     "Letto alle ${fmtTime(it, "HH:mm")} · si aggiorna ogni 5 minuti",

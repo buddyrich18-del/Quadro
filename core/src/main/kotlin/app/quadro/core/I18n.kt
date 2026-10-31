@@ -56,6 +56,14 @@ private val EN: Map<String, String> = mapOf(
     "sopra" to "above",
     "sotto" to "below",
     // pagina web / kiosk
+    "Potenza in tempo reale" to "Real-time power",
+    "Resa di oggi" to "Yield today",
+    "Resa del mese" to "Yield this month",
+    "Resa dell'anno" to "Yield this year",
+    "Resa totale" to "Total yield",
+    "Link FusionSolar riconosciuto: l'app legge dalla pagina potenza in tempo reale e rese (oggi, mese, anno, totale) e le mostra a riquadri. La pagina originale resta consultabile." to
+        "FusionSolar link recognised: the app reads real-time power and yields (today, month, year, total) from the page and shows them as tiles. The original page stays available.",
+    "Per questo indirizzo l'app mostra solo la pagina web." to "For this address the app shows only the web page.",
     "Apri nel browser" to "Open in browser",
     "Leggo i dati dalla pagina…" to "Reading data from the page…",
     "Non riconosco valori in questa pagina. Apri la pagina originale e guarda il testo letto: se serve, mandami una schermata." to

@@ -69,6 +69,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import app.quadro.core.AppConfig
 import app.quadro.core.Band
+import app.quadro.core.isFusionSolarUrl
 import app.quadro.core.Bucket
 import app.quadro.core.CardConfig
 import app.quadro.core.ChartCard
@@ -511,8 +512,6 @@ fun MetricTile(
     value: String,
     status: String,
     color: Color,
-    trend: String,
-    caption: String,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -524,8 +523,6 @@ fun MetricTile(
             Text(title, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(value, style = MaterialTheme.typography.headlineSmall)
             Text(status, fontSize = 13.sp, color = color)
-            Text(trend, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(caption, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -552,12 +549,12 @@ fun ClimateView(card: ClimateCard, cfg: AppConfig, tick: Int) {
                 MetricTile(
                     "Temperatura", "${fmtNum(d.tempNow)} $tu",
                     when (tc) { Comfort.LOW -> "Freddo"; Comfort.OK -> "Comfort"; Comfort.HIGH -> "Caldo" },
-                    statusColor(tc), trendText(trendOf(d.temp, 0.3)), "Fascia comfort ${bandText(card.tempBand, tu)}", Modifier.weight(1f),
+                    statusColor(tc), Modifier.weight(1f),
                 )
                 MetricTile(
                     "Umidità", "${fmtNum(d.humNow, 0)} $hu",
                     when (hc) { Comfort.LOW -> "Aria secca"; Comfort.OK -> "Ideale"; Comfort.HIGH -> "Umido" },
-                    statusColor(hc), trendText(trendOf(d.hum, 2.0)), "Fascia comfort ${bandText(card.humBand, hu)}", Modifier.weight(1f),
+                    statusColor(hc), Modifier.weight(1f),
                 )
             }
             if (card.tempAlert.enabled || card.humAlert.enabled) {
@@ -584,12 +581,6 @@ fun ClimateView(card: ClimateCard, cfg: AppConfig, tick: Int) {
     }
 }
 
-private fun trendText(t: Trend): String = trendArrow(t) + " " + when (t) {
-    Trend.UP -> "in aumento"
-    Trend.DOWN -> "in calo"
-    Trend.FLAT -> "stabile"
-}
-
 private fun shortNum(v: Double): String = fmtNum(v, 1).removeSuffix(",0").removeSuffix(".0")
 
 private fun bandText(b: Band, unit: String) = "${shortNum(b.min)}–${shortNum(b.max)} $unit"
@@ -598,7 +589,7 @@ private fun bandOf(b: Band) = ChartBand(b.min, b.max, ColorOk.copy(alpha = 0.14f
 
 @Composable
 fun WebCardView(card: WebCard) {
-    if (card.extract) {
+    if (card.extract && isFusionSolarUrl(card.url)) {
         KioskView(card)
         return
     }

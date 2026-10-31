@@ -369,3 +369,41 @@ class I18nTest {
         assertEquals("Path not found: data", toEnglish("Percorso non trovato: data"))
     }
 }
+
+class SolarTest {
+    private fun e(label: String, v: String, u: String) = KioskItem(label, v, u)
+
+    @Test
+    fun onlyFusionSolarAddressesAreRecognised() {
+        assertTrue(isFusionSolarUrl("https://uni002eu5.fusionsolar.huawei.com/pvmswebsite/nologin/x"))
+        assertTrue(!isFusionSolarUrl("https://example.com/fusionsolar"))
+        assertTrue(!isFusionSolarUrl("https://www.google.com"))
+    }
+
+    @Test
+    fun valuesAreTakenInOrderWhenLabelsAreUnknown() {
+        val t = fusionSolarTiles(
+            listOf(e("A", "3,2", "kW"), e("B", "12", "kWh"), e("C", "340", "kWh"), e("D", "4,1", "MWh"), e("E", "20", "MWh")),
+        )
+        assertEquals(SOLAR_CAPTIONS, t.map { it.caption })
+        assertEquals(listOf("3,2", "12", "340", "4,1", "20"), t.map { it.item?.value })
+    }
+
+    @Test
+    fun labelsDecideWhenTheyAreClear() {
+        val t = fusionSolarTiles(
+            listOf(
+                e("Total yield", "20", "MWh"), e("Yield today", "12", "kWh"), e("Real-time power", "3", "kW"),
+                e("Yield this year", "4", "MWh"), e("Yield this month", "340", "kWh"),
+            ),
+        )
+        assertEquals(listOf("3", "12", "340", "4", "20"), t.map { it.item?.value })
+    }
+
+    @Test
+    fun missingValuesGiveEmptyTiles() {
+        val t = fusionSolarTiles(listOf(e("x", "5", "kW")))
+        assertEquals(5, t.size)
+        assertNull(t[1].item)
+    }
+}
