@@ -120,6 +120,9 @@ data class WebCard(
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 @Serializable
+enum class ScreensaverMode { CLOCK, CARDS }
+
+@Serializable
 enum class AppLanguage { SYSTEM, IT, EN }
 
 @Serializable
@@ -131,6 +134,11 @@ data class AppConfig(
     /** Moltiplicatore della dimensione del testo (1.0 = normale). */
     val textScale: Double = 1.0,
     val language: AppLanguage = AppLanguage.SYSTEM,
+    /** Minuti senza tocchi prima del salvaschermo (0 = disattivato). */
+    val screensaverMinutes: Int = 0,
+    val screensaverMode: ScreensaverMode = ScreensaverMode.CLOCK,
+    /** Luminosità dello schermo durante il salvaschermo, da 1 a 100 per cento. */
+    val screensaverBrightness: Int = 10,
 )
 
 object ConfigCodec {

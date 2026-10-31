@@ -171,6 +171,14 @@ private val EN: Map<String, String> = mapOf(
     "Lingua" to "Language",
     "Automatica (come il telefono)" to "Automatic (as the phone)",
     "Schermo sempre acceso" to "Keep screen on",
+    "Cosa mostra il salvaschermo" to "What the screensaver shows",
+    "Mostra: orologio su fondo nero" to "Shows: clock on black",
+    "Mostra: le schede a rotazione ogni 30 secondi" to "Shows: the cards, switching every 30 seconds",
+    "Salvaschermo: disattivato" to "Screensaver: off",
+    "Salvaschermo dopo 1 minuto" to "Screensaver after 1 minute",
+    "Salvaschermo dopo 5 minuti" to "Screensaver after 5 minutes",
+    "Salvaschermo dopo 15 minuti" to "Screensaver after 15 minutes",
+    "Salvaschermo dopo 30 minuti" to "Screensaver after 30 minutes",
     "Nuovo server" to "New server",
     "Modifica server" to "Edit server",
     "Servono nome, indirizzo valido e chiave API" to "Name, valid address and API key are required",
@@ -213,6 +221,7 @@ private val EN: Map<String, String> = mapOf(
 
 private val EN_PATTERNS: List<Pair<Regex, String>> = listOf(
     Regex("^Serie (\\d+)$") to "Series $1",
+    Regex("^Luminosità del salvaschermo: (.+)$") to "Screensaver brightness: $1",
     Regex("^(\\d+) feed trovati$") to "$1 feeds found",
     Regex("^Errore del server \\((\\d+)\\)$") to "Server error ($1)",
     Regex("^Letto alle (.+) · si aggiorna ogni 5 minuti$") to "Read at $1 · updates every 5 minutes",

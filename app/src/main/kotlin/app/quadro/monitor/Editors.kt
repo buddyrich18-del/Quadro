@@ -23,6 +23,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -55,6 +56,7 @@ import app.quadro.core.Period
 import app.quadro.core.SeriesRef
 import app.quadro.core.Source
 import app.quadro.core.AppLanguage
+import app.quadro.core.ScreensaverMode
 import app.quadro.core.ThemeMode
 import app.quadro.core.isFusionSolarUrl
 import app.quadro.core.WebCard
@@ -626,6 +628,35 @@ fun ServersScreen(state: AppState, onBack: () -> Unit, onEdit: (String?) -> Unit
                 ),
                 cfg.language.name,
             ) { state.update(cfg.copy(language = AppLanguage.valueOf(it))) }
+            Picker(
+                "Salvaschermo",
+                listOf(
+                    "0" to "Salvaschermo: disattivato",
+                    "1" to "Salvaschermo dopo 1 minuto",
+                    "5" to "Salvaschermo dopo 5 minuti",
+                    "15" to "Salvaschermo dopo 15 minuti",
+                    "30" to "Salvaschermo dopo 30 minuti",
+                ),
+                cfg.screensaverMinutes.toString(),
+            ) { state.update(cfg.copy(screensaverMinutes = it.toInt())) }
+            if (cfg.screensaverMinutes > 0) {
+                var level by remember(cfg.screensaverBrightness) { mutableStateOf(cfg.screensaverBrightness.toFloat()) }
+                Text("Luminosità del salvaschermo: ${level.toInt()}%")
+                Slider(
+                    value = level,
+                    onValueChange = { level = it },
+                    onValueChangeFinished = { state.update(cfg.copy(screensaverBrightness = level.toInt())) },
+                    valueRange = 1f..100f,
+                )
+                Picker(
+                    "Cosa mostra il salvaschermo",
+                    listOf(
+                        "CLOCK" to "Mostra: orologio su fondo nero",
+                        "CARDS" to "Mostra: le schede a rotazione ogni 30 secondi",
+                    ),
+                    cfg.screensaverMode.name,
+                ) { state.update(cfg.copy(screensaverMode = ScreensaverMode.valueOf(it))) }
+            }
             SwitchRow("Schermo sempre acceso", cfg.keepScreenOn) { state.update(cfg.copy(keepScreenOn = it)) }
             Text("Quadro ${appVersion(ctx)}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

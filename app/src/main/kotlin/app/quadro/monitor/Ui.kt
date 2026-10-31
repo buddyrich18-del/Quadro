@@ -79,6 +79,7 @@ import app.quadro.core.Comfort
 import app.quadro.core.EnergyCard
 import app.quadro.core.Period
 import app.quadro.core.Point
+import app.quadro.core.ScreensaverMode
 import app.quadro.core.ThemeMode
 import app.quadro.core.Trend
 import app.quadro.core.WebCard
@@ -189,6 +190,19 @@ fun QuadroRoot() {
         screen = if (screen is Screen.EditSource) Screen.Servers else Screen.Home
     }
     KeepScreenOn(state.config.keepScreenOn)
+    ScreensaverHost(
+        minutes = state.config.screensaverMinutes,
+        brightness = state.config.screensaverBrightness / 100f,
+        rotate = state.config.screensaverMode == ScreensaverMode.CARDS && state.config.cards.size > 1,
+        onRotate = {
+            val ids = state.config.cards.map { it.id }
+            if (ids.isNotEmpty()) {
+                val i = ids.indexOf(state.selectedCardId ?: ids.first())
+                state.selectedCardId = ids[(i + 1) % ids.size]
+                screen = Screen.Home
+            }
+        },
+    ) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         when (val s = screen) {
             Screen.Home -> HomeScreen(
@@ -218,6 +232,7 @@ fun QuadroRoot() {
                 onDone = { screen = Screen.Home },
             )
         }
+    }
     }
     }
 }
