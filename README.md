@@ -8,11 +8,12 @@ Non è un'app ufficiale di Emoncms né di FusionSolar. Il nome "Quadro" è provv
 
 - **Energia:** potenza adesso, consumo di oggi, grafico a linee con 3H/6H/D/W/M, barre dei kWh giornalieri, interruttore kWh/costo.
 - **Grafico personalizzato:** linee (fino a 4 serie) o barre, raggruppamento per ora o giorno, media/somma/min/max, asse regolabile. Tocca e tieni premuto per leggere i valori.
-- **Temperatura e umidità:** valori attuali con tendenza, fasce comfort (zona verde nei grafici), avvisi con notifica quando si esce dai limiti.
+- **Temperatura e umidità:** valori attuali con tendenza scritta (in aumento, stabile, in calo), fascia comfort indicata sotto ogni valore, didascalie sopra i grafici (unità e zona verde), avvisi con notifica quando si esce dai limiti.
 - **Sorgenti:** feed di un server Emoncms (chiave di sola lettura) oppure qualunque link pubblico che restituisca JSON o CSV.
 - **Fotovoltaico / pagina web:** l'app apre un link pubblico (https), legge i valori che la pagina mostra (potenza, energia, ecc.) e li ordina a riquadri per potenza ed energia. La pagina originale e il testo letto restano consultabili.
 - **Una scheda alla volta:** in alto scegli la scheda da vedere; con ← e → ne cambi l'ordine.
-- **Aspetto:** in Server e impostazioni scegli sfondo chiaro, scuro o automatico e la dimensione del testo.
+- **Grafici a linee:** tratto deciso con angoli vivi, area chiara sotto la linea e griglia leggera. Il colore si sceglie per ogni serie (e per la scheda Energia).
+- **Aspetto e lingua:** in Server e impostazioni scegli sfondo chiaro, scuro o automatico, dimensione del testo e lingua (italiano, inglese o come il telefono).
 
 ## Come ottenere l'APK (senza installare nulla sul PC)
 
@@ -51,7 +52,7 @@ Limiti: è un'euristica tarata senza aver visto la pagina vera. I grafici disegn
 
 ## Stato della verifica
 
-La prima versione è stata compilata dal workflow e installata. Le modifiche successive (una scheda alla volta, tema e testo, lettura dei dati fotovoltaico) sono state scritte e riviste a mano ma **non compilate né provate**; i test del modulo `core` (38) non sono stati eseguiti dove è stato scritto il codice. La lettura della pagina FusionSolar non è mai stata vista su una pagina reale.
+La prima versione è stata compilata dal workflow e installata. Le modifiche successive (una scheda alla volta, tema e testo, lettura dei dati fotovoltaico, lingua, nuovo stile dei grafici) sono state scritte e riviste a mano ma **non compilate né provate**; i test del modulo `core` (42) non sono stati eseguiti dove è stato scritto il codice. La lettura della pagina FusionSolar non è mai stata vista su una pagina reale.
 
 ## Struttura
 

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -131,6 +130,10 @@ fun LineChart(
             val yBot = yOf(b.min).coerceIn(top, top + h)
             if (yBot > yTop) drawRect(b.color, Offset(left, yTop), Size(w, yBot - yTop))
         }
+        for (i in 0..4) {
+            val gx = left + w * i / 4f
+            drawLine(gridColor.copy(alpha = 0.6f), Offset(gx, top), Offset(gx, top + h), strokeWidth = 1f)
+        }
         for (i in 0..3) {
             val v = finalLo + (finalHi - finalLo) * i / 3.0
             val yy = yOf(v)
@@ -145,15 +148,28 @@ fun LineChart(
         for (s in series) {
             if (s.points.isEmpty()) continue
             val path = Path()
+            val area = Path()
+            val baseY = top + h
             s.points.forEachIndexed { i, p ->
                 val px = xOf(p.t)
                 val py = yOf(p.v)
-                if (i == 0) path.moveTo(px, py) else path.lineTo(px, py)
+                if (i == 0) {
+                    path.moveTo(px, py)
+                    area.moveTo(px, baseY)
+                    area.lineTo(px, py)
+                } else {
+                    path.lineTo(px, py)
+                    area.lineTo(px, py)
+                }
             }
+            area.lineTo(xOf(s.points.last().t), baseY)
+            area.close()
+            // Stile: area chiara sotto la linea, tratto deciso con angoli vivi, colore scelto dall'utente.
+            drawPath(area, s.color.copy(alpha = 0.14f))
             drawPath(
                 path,
                 s.color,
-                style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
+                style = Stroke(width = 2.5.dp.toPx(), miter = 4f, cap = StrokeCap.Round, join = StrokeJoin.Miter),
             )
         }
 

@@ -340,3 +340,32 @@ class ConfigTest {
         assertEquals(AppConfig(), ConfigCodec.decode("non è json"))
     }
 }
+
+class I18nTest {
+    @Test
+    fun knownTextIsTranslated() {
+        assertEquals("Save", toEnglish("Salva"))
+        assertEquals("Humidity", toEnglish("Umidità"))
+    }
+
+    @Test
+    fun unknownTextStaysAsIs() {
+        assertEquals("Casa mia", toEnglish("Casa mia"))
+        assertEquals("", toEnglish(""))
+    }
+
+    @Test
+    fun leadingSpacesAreKept() {
+        assertEquals("  Temperature alert", toEnglish("  Avviso temperatura"))
+    }
+
+    @Test
+    fun textsWithNumbersAndPrefixesAreTranslated() {
+        assertEquals("Series 2", toEnglish("Serie 2"))
+        assertEquals("Series 1: the address must start with https://", toEnglish("Serie 1: l'indirizzo deve iniziare con https://"))
+        assertEquals("Connection successful: 5 feeds found", toEnglish("Connessione riuscita: 5 feed trovati"))
+        assertEquals("Server error (500)", toEnglish("Errore del server (500)"))
+        assertEquals("Read at 10:30 · updates every 5 minutes", toEnglish("Letto alle 10:30 · si aggiorna ogni 5 minuti"))
+        assertEquals("Path not found: data", toEnglish("Percorso non trovato: data"))
+    }
+}

@@ -39,7 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -98,10 +97,10 @@ import java.util.Locale
 val ColorOk = Color(0xFF2E9E5B)
 val ColorLow = Color(0xFF3B82F6)
 val ColorHigh = Color(0xFFE5732B)
-val SeriesPalette = listOf(0xFF2E7DFFL, 0xFFE5732BL, 0xFF2E9E5BL, 0xFF9B59B6L, 0xFFD6336CL)
+val SeriesPalette = listOf(0xFF7B68A6L, 0xFF2E7DFFL, 0xFFE5732BL, 0xFF2E9E5BL, 0xFFD6336CL, 0xFF1AA6B7L, 0xFFC9A227L)
 
 @Composable
-fun QuadroTheme(mode: ThemeMode, textScale: Double, content: @Composable () -> Unit) {
+fun QuadroTheme(mode: ThemeMode, textScale: Double, english: Boolean, content: @Composable () -> Unit) {
     val dark = when (mode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false
@@ -131,6 +130,7 @@ fun QuadroTheme(mode: ThemeMode, textScale: Double, content: @Composable () -> U
     }
     CompositionLocalProvider(
         LocalDensity provides Density(density.density, density.fontScale * textScale.toFloat()),
+        LocalEnglish provides english,
     ) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
@@ -181,7 +181,9 @@ fun QuadroRoot() {
             notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
-    QuadroTheme(state.config.theme, state.config.textScale) {
+    val english = I18n.resolve(state.config.language)
+    I18n.english = english
+    QuadroTheme(state.config.theme, state.config.textScale, english) {
     BackHandler(enabled = screen !is Screen.Home) {
         screen = if (screen is Screen.EditSource) Screen.Servers else Screen.Home
     }
@@ -415,7 +417,7 @@ fun EnergyView(card: EnergyCard, cfg: AppConfig, tick: Int) {
             }
             PeriodRow(period) { period = it }
             LineChart(
-                series = listOf(ChartSeries("Potenza", "W", MaterialTheme.colorScheme.primary, downsample(d.power, 600))),
+                series = listOf(ChartSeries(tr("Potenza"), "W", Color(card.colorArgb), downsample(d.power, 600))),
                 yMin = 0.0,
             )
             val days = d.daily.takeLast(14)
@@ -425,7 +427,7 @@ fun EnergyView(card: EnergyCard, cfg: AppConfig, tick: Int) {
                     Instant.ofEpochMilli(it.t).atZone(ZoneId.systemDefault()).dayOfWeek
                         .getDisplayName(java.time.format.TextStyle.NARROW, Locale.getDefault())
                 },
-                color = MaterialTheme.colorScheme.primary,
+                color = Color(card.colorArgb),
                 format = { fmtNum(it, if (showCost) 2 else 1) },
             )
         }
@@ -482,7 +484,7 @@ fun ChartView(card: ChartCard, cfg: AppConfig, tick: Int) {
                 val st = statsOf(processed[i]) ?: return@forEachIndexed
                 val u = if (s.unit.isBlank()) "" else " ${s.unit}"
                 Text(
-                    "${s.label}: min ${fmtNum(st.min)} · media ${fmtNum(st.avg)} · max ${fmtNum(st.max)}$u",
+                    "${s.label}: min ${fmtNum(st.min)} · ${pick("media", "avg")} ${fmtNum(st.avg)} · max ${fmtNum(st.max)}$u",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -510,6 +512,7 @@ fun MetricTile(
     status: String,
     color: Color,
     trend: String,
+    caption: String,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -519,11 +522,10 @@ fun MetricTile(
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(title, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(value, style = MaterialTheme.typography.headlineSmall)
-                Text(trend, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            Text(value, style = MaterialTheme.typography.headlineSmall)
             Text(status, fontSize = 13.sp, color = color)
+            Text(trend, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(caption, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -550,12 +552,12 @@ fun ClimateView(card: ClimateCard, cfg: AppConfig, tick: Int) {
                 MetricTile(
                     "Temperatura", "${fmtNum(d.tempNow)} $tu",
                     when (tc) { Comfort.LOW -> "Freddo"; Comfort.OK -> "Comfort"; Comfort.HIGH -> "Caldo" },
-                    statusColor(tc), trendArrow(trendOf(d.temp, 0.3)), Modifier.weight(1f),
+                    statusColor(tc), trendText(trendOf(d.temp, 0.3)), "Fascia comfort ${bandText(card.tempBand, tu)}", Modifier.weight(1f),
                 )
                 MetricTile(
                     "Umidità", "${fmtNum(d.humNow, 0)} $hu",
                     when (hc) { Comfort.LOW -> "Aria secca"; Comfort.OK -> "Ideale"; Comfort.HIGH -> "Umido" },
-                    statusColor(hc), trendArrow(trendOf(d.hum, 2.0)), Modifier.weight(1f),
+                    statusColor(hc), trendText(trendOf(d.hum, 2.0)), "Fascia comfort ${bandText(card.humBand, hu)}", Modifier.weight(1f),
                 )
             }
             if (card.tempAlert.enabled || card.humAlert.enabled) {
@@ -564,13 +566,15 @@ fun ClimateView(card: ClimateCard, cfg: AppConfig, tick: Int) {
                     fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Text("Temperatura", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Temperatura ($tu)", fontSize = 13.sp)
+            Text("zona verde = fascia comfort ${bandText(card.tempBand, tu)}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             LineChart(
                 series = listOf(ChartSeries(card.temperature.label, tu, Color(card.temperature.colorArgb), downsample(d.temp, 600))),
                 height = 130.dp,
                 bands = listOf(bandOf(card.tempBand)),
             )
-            Text("Umidità", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Umidità ($hu)", fontSize = 13.sp)
+            Text("zona verde = fascia comfort ${bandText(card.humBand, hu)}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             LineChart(
                 series = listOf(ChartSeries(card.humidity.label, hu, Color(card.humidity.colorArgb), downsample(d.hum, 600))),
                 height = 130.dp,
@@ -579,6 +583,16 @@ fun ClimateView(card: ClimateCard, cfg: AppConfig, tick: Int) {
         }
     }
 }
+
+private fun trendText(t: Trend): String = trendArrow(t) + " " + when (t) {
+    Trend.UP -> "in aumento"
+    Trend.DOWN -> "in calo"
+    Trend.FLAT -> "stabile"
+}
+
+private fun shortNum(v: Double): String = fmtNum(v, 1).removeSuffix(",0").removeSuffix(".0")
+
+private fun bandText(b: Band, unit: String) = "${shortNum(b.min)}–${shortNum(b.max)} $unit"
 
 private fun bandOf(b: Band) = ChartBand(b.min, b.max, ColorOk.copy(alpha = 0.14f))
 

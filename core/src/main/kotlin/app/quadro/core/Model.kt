@@ -36,7 +36,7 @@ enum class Period(val label: String, val millis: Long) {
 data class SeriesRef(
     val label: String,
     val unit: String = "",
-    val colorArgb: Long = 0xFF2E7DFFL,
+    val colorArgb: Long = 0xFF7B68A6L,
     val sourceId: String? = null,
     val feedId: String? = null,
     val linkUrl: String? = null,
@@ -90,6 +90,7 @@ data class EnergyCard(
     val unitCost: Double = 0.0,
     val currency: String = "€",
     val kwhIsWh: Boolean = false,
+    val colorArgb: Long = 0xFF7B68A6L,
 ) : CardConfig
 
 @Serializable
@@ -119,6 +120,9 @@ data class WebCard(
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 @Serializable
+enum class AppLanguage { SYSTEM, IT, EN }
+
+@Serializable
 data class AppConfig(
     val sources: List<Source> = emptyList(),
     val cards: List<CardConfig> = emptyList(),
@@ -126,6 +130,7 @@ data class AppConfig(
     val theme: ThemeMode = ThemeMode.SYSTEM,
     /** Moltiplicatore della dimensione del testo (1.0 = normale). */
     val textScale: Double = 1.0,
+    val language: AppLanguage = AppLanguage.SYSTEM,
 )
 
 object ConfigCodec {

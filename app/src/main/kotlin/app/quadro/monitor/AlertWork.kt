@@ -34,9 +34,10 @@ const val ALERT_CHANNEL = "alerts"
 class QuadroApp : Application() {
     override fun onCreate() {
         super.onCreate()
+        I18n.english = I18n.resolve(ConfigStore.load(this).language)
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(
-            NotificationChannel(ALERT_CHANNEL, "Avvisi temperatura e umidità", NotificationManager.IMPORTANCE_DEFAULT),
+            NotificationChannel(ALERT_CHANNEL, tr("Avvisi temperatura e umidità"), NotificationManager.IMPORTANCE_DEFAULT),
         )
         AlertScheduler.sync(this, ConfigStore.load(this))
     }
@@ -65,6 +66,7 @@ class AlertWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
     override suspend fun doWork(): Result {
         val ctx = applicationContext
         val cfg = ConfigStore.load(ctx)
+        I18n.english = I18n.resolve(cfg.language)
         val repo = Repo(ctx)
         val prefs = ctx.getSharedPreferences("alert_state", Context.MODE_PRIVATE)
         for (card in cfg.cards.filterIsInstance<ClimateCard>()) {
@@ -105,7 +107,7 @@ class AlertWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
                 val above = decision.state == AlertState.HIGH
                 val limit = (if (above) rule.max else rule.min) ?: return
                 val unit = ref.unit.ifBlank { defaultUnit }
-                val text = "$name ${fmtNum(value, 1)} $unit: ${if (above) "sopra" else "sotto"} il limite (${fmtNum(limit, 1)})"
+                val text = "${tr(name)} ${fmtNum(value, 1)} $unit: ${if (above) tr("sopra") else tr("sotto")} ${pick("il limite", "the limit")} (${fmtNum(limit, 1)})"
                 notify(ctx, key.hashCode(), card.title, text)
             }
         } catch (e: CancellationException) {

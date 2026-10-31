@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,6 +54,7 @@ import app.quadro.core.LinkFormat
 import app.quadro.core.Period
 import app.quadro.core.SeriesRef
 import app.quadro.core.Source
+import app.quadro.core.AppLanguage
 import app.quadro.core.ThemeMode
 import app.quadro.core.WebCard
 import app.quadro.core.normalizeBaseUrl
@@ -223,6 +223,7 @@ fun SeriesBox(
             }
             Field("Nome", ref.label) { onChange(ref.copy(label = it)) }
             Field("Unità (es. °C, %, W)", ref.unit) { onChange(ref.copy(unit = it)) }
+            Text("Colore della linea", style = MaterialTheme.typography.titleSmall)
             ColorRow(ref.colorArgb) { onChange(ref.copy(colorArgb = it)) }
             Picker(
                 "Origine",
@@ -451,6 +452,7 @@ fun EnergyEditor(initial: EnergyCard?, cfg: AppConfig, onSave: (CardConfig) -> U
     var isWh by remember { mutableStateOf(initial?.kwhIsWh ?: false) }
     var cost by remember { mutableStateOf<Double?>(initial?.unitCost ?: 0.0) }
     var currency by remember { mutableStateOf(initial?.currency ?: "€") }
+    var color by remember { mutableStateOf(initial?.colorArgb ?: SeriesPalette[0]) }
     var error by remember { mutableStateOf<String?>(null) }
 
     EditorFrame(
@@ -474,6 +476,7 @@ fun EnergyEditor(initial: EnergyCard?, cfg: AppConfig, onSave: (CardConfig) -> U
                         unitCost = cost ?: 0.0,
                         currency = currency.ifBlank { "€" },
                         kwhIsWh = isWh,
+                        colorArgb = color,
                     ),
                 )
             }
@@ -492,6 +495,8 @@ fun EnergyEditor(initial: EnergyCard?, cfg: AppConfig, onSave: (CardConfig) -> U
         SwitchRow("Il feed è in Wh (non in kWh)", isWh) { isWh = it }
         NumField("Costo per kWh", cost) { cost = it }
         Field("Simbolo della valuta", currency) { currency = it }
+        Text("Colore della linea", style = MaterialTheme.typography.titleSmall)
+        ColorRow(color) { color = it }
     }
 }
 
@@ -613,6 +618,15 @@ fun ServersScreen(state: AppState, onBack: () -> Unit, onEdit: (String?) -> Unit
                 ),
                 scaleNow.toString(),
             ) { state.update(cfg.copy(textScale = it.toDouble())) }
+            Picker(
+                "Lingua",
+                listOf(
+                    "SYSTEM" to "Automatica (come il telefono)",
+                    "IT" to "Italiano",
+                    "EN" to "English",
+                ),
+                cfg.language.name,
+            ) { state.update(cfg.copy(language = AppLanguage.valueOf(it))) }
             SwitchRow("Schermo sempre acceso", cfg.keepScreenOn) { state.update(cfg.copy(keepScreenOn = it)) }
             Text("Quadro ${appVersion(ctx)}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
