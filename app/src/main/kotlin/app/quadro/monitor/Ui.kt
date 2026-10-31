@@ -193,6 +193,8 @@ fun QuadroRoot() {
     ScreensaverHost(
         minutes = state.config.screensaverMinutes,
         brightness = state.config.screensaverBrightness / 100f,
+        fullscreen = state.config.screensaverFullscreen,
+        intervalSeconds = state.config.screensaverIntervalSeconds,
         rotate = state.config.screensaverMode == ScreensaverMode.CARDS && state.config.cards.size > 1,
         onRotate = {
             val ids = state.config.cards.map { it.id }
@@ -253,13 +255,14 @@ fun HomeScreen(
         }
     }
     val cfg = state.config
+    val full = LocalSaverFull.current
     Column(Modifier.fillMaxSize()) {
-        Text(
+        if (!full) Text(
             "Quadro",
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp),
         )
-        Row(
+        if (!full) Row(
             Modifier.fillMaxWidth().padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -288,7 +291,7 @@ fun HomeScreen(
         } else {
             val current = cfg.cards.firstOrNull { it.id == state.selectedCardId } ?: cfg.cards.first()
             val index = cfg.cards.indexOfFirst { it.id == current.id }
-            Row(
+            if (!full) Row(
                 Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
@@ -364,11 +367,12 @@ fun CardFrame(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            val full = LocalSaverFull.current
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                if (onPrev != null) TextButton(onClick = onPrev, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("←") }
-                if (onNext != null) TextButton(onClick = onNext, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("→") }
-                TextButton(onClick = onEdit) { Text("Modifica") }
+                if (!full && onPrev != null) TextButton(onClick = onPrev, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("←") }
+                if (!full && onNext != null) TextButton(onClick = onNext, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("→") }
+                if (!full) TextButton(onClick = onEdit) { Text("Modifica") }
             }
             content()
         }

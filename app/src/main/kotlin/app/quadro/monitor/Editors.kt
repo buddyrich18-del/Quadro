@@ -652,10 +652,22 @@ fun ServersScreen(state: AppState, onBack: () -> Unit, onEdit: (String?) -> Unit
                     "Cosa mostra il salvaschermo",
                     listOf(
                         "CLOCK" to "Mostra: orologio su fondo nero",
-                        "CARDS" to "Mostra: le schede a rotazione ogni 30 secondi",
+                        "CARDS" to "Mostra: le schede a rotazione",
                     ),
                     cfg.screensaverMode.name,
                 ) { state.update(cfg.copy(screensaverMode = ScreensaverMode.valueOf(it))) }
+            }
+            if (cfg.screensaverMinutes > 0 && cfg.screensaverMode == ScreensaverMode.CARDS) {
+                Picker(
+                    "Cambio scheda",
+                    listOf(10, 20, 30, 60, 120, 300).map { it.toString() to intervalLabel(it) },
+                    cfg.screensaverIntervalSeconds.toString(),
+                ) { state.update(cfg.copy(screensaverIntervalSeconds = it.toInt())) }
+            }
+            if (cfg.screensaverMinutes > 0) {
+                SwitchRow("Salvaschermo a schermo intero (nasconde le barre del telefono e i pulsanti)", cfg.screensaverFullscreen) {
+                    state.update(cfg.copy(screensaverFullscreen = it))
+                }
             }
             SwitchRow("Schermo sempre acceso", cfg.keepScreenOn) { state.update(cfg.copy(keepScreenOn = it)) }
             Text("Quadro ${appVersion(ctx)}", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -766,3 +778,8 @@ fun SourceEditor(state: AppState, id: String?, onDone: () -> Unit) {
         msg?.let { Text(it, color = if (ok) ColorOk else MaterialTheme.colorScheme.error) }
     }
 }
+
+private fun intervalLabel(seconds: Int): String =
+    if (seconds < 60) "Cambio scheda ogni $seconds secondi"
+    else if (seconds == 60) "Cambio scheda ogni minuto"
+    else "Cambio scheda ogni ${seconds / 60} minuti"

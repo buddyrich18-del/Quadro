@@ -2,6 +2,8 @@ package app.quadro.monitor
 
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -11,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Text as M3Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,19 +29,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
+/** Vero quando il salvaschermo mostra le schede a schermo intero (senza titolo, pulsanti e selettore). */
+val LocalSaverFull = compositionLocalOf { false }
+
 /**
  * Salvaschermo dell'app: dopo alcuni minuti senza toccare lo schermo mostra un fondo nero con l'ora,
  * che cambia posizione ogni minuto (per non segnare gli schermi OLED) e abbassa la luminosità.
- * In alternativa alterna le schede create ogni 30 secondi. Un tocco o il tasto indietro lo chiudono. minutes = 0 lo disattiva.
+ * In alternativa alterna le schede create (intervallo a scelta). Un tocco o il tasto indietro lo chiudono. minutes = 0 lo disattiva.
  * Tutto il resto dell'app continua a funzionare sotto (letture, avvisi).
  */
 @Composable
-fun ScreensaverHost(minutes: Int, brightness: Float, rotate: Boolean, onRotate: () -> Unit, content: @Composable () -> Unit) {
+fun ScreensaverHost(minutes: Int, brightness: Float, fullscreen: Boolean, rotate: Boolean, intervalSeconds: Int, onRotate: () -> Unit, content: @Composable () -> Unit) {
     val rotateNow by rememberUpdatedState(onRotate)
     var lastTouch by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var active by remember { mutableStateOf(false) }
@@ -63,29 +74,53 @@ fun ScreensaverHost(minutes: Int, brightness: Float, rotate: Boolean, onRotate: 
                 }
             },
     ) {
-        content()
-        if (active && minutes > 0) {
+        val showSaver = active && minutes > 0
+        CompositionLocalProvider(LocalSaverFull provides (showSaver && rotate && fullscreen)) {
+            content()
+        }
+        if (showSaver) {
+            if (fullscreen) HideSystemBars()
             val dismiss = { active = false; lastTouch = System.currentTimeMillis() }
             BackHandler { dismiss() }
             if (rotate) {
-                // Le schede si alternano ogni 30 secondi; il primo tocco chiude e non preme nulla.
+                // Le schede si alternano ogni intervalSeconds secondi; il primo tocco chiude e non preme nulla.
                 DimScreen(brightness)
+                // Dissolvenza: tutto lo schermo diventa nero, la scheda cambia al buio, poi torna visibile.
+                val fade = remember { Animatable(0f) }
                 LaunchedEffect(Unit) {
                     while (true) {
-                        delay(30_000)
+                        delay(intervalSeconds.coerceAtLeast(5) * 1000L)
+                        fade.animateTo(1f, tween(1500))
                         rotateNow()
+                        delay(1500)
+                        fade.animateTo(0f, tween(2000))
                     }
                 }
                 Box(
                     Modifier
                         .fillMaxSize()
-                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { dismiss() },
+                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { dismiss() }
+                        .graphicsLayer { alpha = fade.value }
+                        .background(Color.Black),
                 )
             } else {
                 DimScreen(brightness)
                 ClockScreen(onDismiss = dismiss)
             }
         }
+    }
+}
+
+/** Nasconde barra di stato e barra di navigazione finché il salvaschermo è visibile. */
+@Composable
+private fun HideSystemBars() {
+    val view = LocalView.current
+    DisposableEffect(Unit) {
+        val window = view.context.findActivity()?.window
+        val controller = window?.let { WindowCompat.getInsetsController(it, view) }
+        controller?.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller?.hide(WindowInsetsCompat.Type.systemBars())
+        onDispose { controller?.show(WindowInsetsCompat.Type.systemBars()) }
     }
 }
 

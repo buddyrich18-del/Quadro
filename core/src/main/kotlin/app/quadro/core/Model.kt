@@ -139,6 +139,10 @@ data class AppConfig(
     val screensaverMode: ScreensaverMode = ScreensaverMode.CLOCK,
     /** Luminosità dello schermo durante il salvaschermo, da 1 a 100 per cento. */
     val screensaverBrightness: Int = 10,
+    /** Nasconde barre di sistema e pulsanti mentre il salvaschermo è attivo. */
+    val screensaverFullscreen: Boolean = false,
+    /** Secondi tra una scheda e l'altra nella rotazione del salvaschermo. */
+    val screensaverIntervalSeconds: Int = 30,
 )
 
 object ConfigCodec {
