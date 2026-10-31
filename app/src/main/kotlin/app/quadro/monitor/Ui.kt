@@ -11,7 +11,10 @@ import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -41,9 +44,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -52,11 +58,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import app.quadro.core.AppConfig
 import app.quadro.core.Band
 import app.quadro.core.Bucket
@@ -68,11 +79,11 @@ import app.quadro.core.Comfort
 import app.quadro.core.EnergyCard
 import app.quadro.core.Period
 import app.quadro.core.Point
+import app.quadro.core.ThemeMode
 import app.quadro.core.Trend
 import app.quadro.core.WebCard
 import app.quadro.core.bucketize
 import app.quadro.core.classify
-import app.quadro.core.dewPointC
 import app.quadro.core.downsample
 import app.quadro.core.statsOf
 import app.quadro.core.trendOf
@@ -90,8 +101,13 @@ val ColorHigh = Color(0xFFE5732B)
 val SeriesPalette = listOf(0xFF2E7DFFL, 0xFFE5732BL, 0xFF2E9E5BL, 0xFF9B59B6L, 0xFFD6336CL)
 
 @Composable
-fun QuadroTheme(content: @Composable () -> Unit) {
-    val scheme = if (isSystemInDarkTheme()) {
+fun QuadroTheme(mode: ThemeMode, textScale: Double, content: @Composable () -> Unit) {
+    val dark = when (mode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+    val scheme = if (dark) {
         darkColorScheme(
             primary = Color(0xFF7DB4FF),
             background = Color(0xFF121417),
@@ -104,12 +120,28 @@ fun QuadroTheme(content: @Composable () -> Unit) {
             surface = Color(0xFFF7F8FA),
         )
     }
-    MaterialTheme(colorScheme = scheme, content = content)
+    val view = LocalView.current
+    val density = LocalDensity.current
+    SideEffect {
+        val window = view.context.findActivity()?.window
+        if (window != null) {
+            window.statusBarColor = scheme.background.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !dark
+        }
+    }
+    CompositionLocalProvider(
+        LocalDensity provides Density(density.density, density.fontScale * textScale.toFloat()),
+    ) {
+        MaterialTheme(colorScheme = scheme, content = content)
+    }
 }
 
 class AppState(private val ctx: Context) {
     var config by mutableStateOf(ConfigStore.load(ctx))
         private set
+
+    /** Scheda mostrata nella schermata principale (non viene salvata). */
+    var selectedCardId by mutableStateOf<String?>(null)
 
     fun update(next: AppConfig) {
         config = next
@@ -149,6 +181,7 @@ fun QuadroRoot() {
             notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
+    QuadroTheme(state.config.theme, state.config.textScale) {
     BackHandler(enabled = screen !is Screen.Home) {
         screen = if (screen is Screen.EditSource) Screen.Servers else Screen.Home
     }
@@ -182,6 +215,7 @@ fun QuadroRoot() {
                 onDone = { screen = Screen.Home },
             )
         }
+    }
     }
 }
 
@@ -221,7 +255,7 @@ fun HomeScreen(
                         "energy" to "Energia (potenza e kWh)",
                         "chart" to "Grafico a linee o barre",
                         "climate" to "Temperatura e umidità",
-                        "web" to "Pagina web (es. FusionSolar)",
+                        "web" to "Fotovoltaico / pagina web (es. FusionSolar)",
                     ).forEach { (type, text) ->
                         DropdownMenuItem(text = { Text(text) }, onClick = {
                             menu = false
@@ -234,31 +268,50 @@ fun HomeScreen(
         if (cfg.cards.isEmpty()) {
             EmptyHome(hasServers = cfg.sources.isNotEmpty(), onServers = onServers)
         } else {
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+            val current = cfg.cards.firstOrNull { it.id == state.selectedCardId } ?: cfg.cards.first()
+            val index = cfg.cards.indexOfFirst { it.id == current.id }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                itemsIndexed(cfg.cards, key = { _, c -> c.id }) { i, c ->
+                cfg.cards.forEach { c ->
+                    Button(
+                        onClick = { state.selectedCardId = c.id },
+                        colors = if (c.id == current.id) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(),
+                    ) { Text(c.title, maxLines = 1) }
+                }
+            }
+            key(current.id) {
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
+                ) {
                     val move: (Int) -> Unit = { delta ->
                         val list = cfg.cards.toMutableList()
-                        val j = i + delta
+                        val j = index + delta
                         if (j in list.indices) {
-                            val item = list.removeAt(i)
+                            val item = list.removeAt(index)
                             list.add(j, item)
                             state.update(cfg.copy(cards = list))
                         }
                     }
                     CardFrame(
-                        title = c.title,
-                        onEdit = { onEditCard(c) },
-                        onUp = if (i > 0) ({ move(-1) }) else null,
-                        onDown = if (i < cfg.cards.size - 1) ({ move(1) }) else null,
+                        title = current.title,
+                        onEdit = { onEditCard(current) },
+                        onPrev = if (index > 0) ({ move(-1) }) else null,
+                        onNext = if (index < cfg.cards.size - 1) ({ move(1) }) else null,
                     ) {
-                        when (c) {
-                            is EnergyCard -> EnergyView(c, cfg, tick)
-                            is ChartCard -> ChartView(c, cfg, tick)
-                            is ClimateCard -> ClimateView(c, cfg, tick)
-                            is WebCard -> WebCardView(c)
+                        when (current) {
+                            is EnergyCard -> EnergyView(current, cfg, tick)
+                            is ChartCard -> ChartView(current, cfg, tick)
+                            is ClimateCard -> ClimateView(current, cfg, tick)
+                            is WebCard -> WebCardView(current)
                         }
                     }
                 }
@@ -284,8 +337,8 @@ fun EmptyHome(hasServers: Boolean, onServers: () -> Unit) {
 fun CardFrame(
     title: String,
     onEdit: () -> Unit,
-    onUp: (() -> Unit)?,
-    onDown: (() -> Unit)?,
+    onPrev: (() -> Unit)?,
+    onNext: (() -> Unit)?,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Card(
@@ -295,8 +348,8 @@ fun CardFrame(
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                if (onUp != null) TextButton(onClick = onUp, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("↑") }
-                if (onDown != null) TextButton(onClick = onDown, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("↓") }
+                if (onPrev != null) TextButton(onClick = onPrev, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("←") }
+                if (onNext != null) TextButton(onClick = onNext, contentPadding = PaddingValues(horizontal = 8.dp)) { Text("→") }
                 TextButton(onClick = onEdit) { Text("Modifica") }
             }
             content()
@@ -505,24 +558,6 @@ fun ClimateView(card: ClimateCard, cfg: AppConfig, tick: Int) {
                     statusColor(hc), trendArrow(trendOf(d.hum, 2.0)), Modifier.weight(1f),
                 )
             }
-            Text(
-                "Punto di rugiada ${fmtNum(dewPointC(d.tempNow, d.humNow))} °C",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            val ts = statsOf(d.temp)
-            val hs = statsOf(d.hum)
-            if (ts != null) {
-                Text(
-                    "Temperatura: min ${fmtNum(ts.min)} · max ${fmtNum(ts.max)} $tu",
-                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (hs != null) {
-                Text(
-                    "Umidità: min ${fmtNum(hs.min, 0)} · max ${fmtNum(hs.max, 0)} $hu",
-                    fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
             if (card.tempAlert.enabled || card.humAlert.enabled) {
                 Text(
                     "Avvisi attivi (controllo ogni 15 minuti circa)",
@@ -549,6 +584,10 @@ private fun bandOf(b: Band) = ChartBand(b.min, b.max, ColorOk.copy(alpha = 0.14f
 
 @Composable
 fun WebCardView(card: WebCard) {
+    if (card.extract) {
+        KioskView(card)
+        return
+    }
     val ctx = LocalContext.current
     AndroidView(
         modifier = Modifier.fillMaxWidth().height(460.dp),

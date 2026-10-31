@@ -55,6 +55,7 @@ import app.quadro.core.LinkFormat
 import app.quadro.core.Period
 import app.quadro.core.SeriesRef
 import app.quadro.core.Source
+import app.quadro.core.ThemeMode
 import app.quadro.core.WebCard
 import app.quadro.core.normalizeBaseUrl
 import app.quadro.core.parseAccountQr
@@ -498,11 +499,12 @@ fun EnergyEditor(initial: EnergyCard?, cfg: AppConfig, onSave: (CardConfig) -> U
 
 @Composable
 fun WebEditor(initial: WebCard?, onSave: (CardConfig) -> Unit, onDelete: (() -> Unit)?, onBack: () -> Unit) {
-    var title by remember { mutableStateOf(initial?.title ?: "Pagina web") }
+    var title by remember { mutableStateOf(initial?.title ?: "Fotovoltaico") }
     var url by remember { mutableStateOf(initial?.url ?: "https://") }
+    var extract by remember { mutableStateOf(initial?.extract ?: true) }
     var error by remember { mutableStateOf<String?>(null) }
     EditorFrame(
-        title = if (initial == null) "Nuova pagina web" else "Modifica pagina web",
+        title = if (initial == null) "Nuova scheda fotovoltaico / web" else "Modifica scheda fotovoltaico / web",
         onBack = onBack,
         onDelete = onDelete,
         error = error,
@@ -513,14 +515,16 @@ fun WebEditor(initial: WebCard?, onSave: (CardConfig) -> Unit, onDelete: (() -> 
             } else if (!u.startsWith("https://") || u.length < 12) {
                 error = "Usa un indirizzo che inizia con https://"
             } else {
-                onSave(WebCard(initial?.id ?: UUID.randomUUID().toString(), title.trim(), u))
+                onSave(WebCard(initial?.id ?: UUID.randomUUID().toString(), title.trim(), u, extract))
             }
         },
     ) {
         Field("Titolo", title) { title = it }
-        Field("Indirizzo della pagina", url) { url = it }
+        Field("Indirizzo della pagina (es. il link pubblico di FusionSolar)", url) { url = it }
+        SwitchRow("Leggi i valori dalla pagina e mostrali a riquadri", extract) { extract = it }
         Text(
-            "Mostra la pagina così com'è dentro l'app (per esempio il link pubblico di FusionSolar). Non estrae i numeri per farne grafici: per quello serve un link JSON o CSV.",
+            if (extract) "L'app apre la pagina in background, legge i testi che mostra (potenza, energia, ecc.) e li ordina per potenza ed energia. Se la pagina cambia o non viene riconosciuta, puoi sempre vedere la pagina originale e il testo letto."
+            else "Mostra la pagina così com'è dentro l'app.",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
@@ -541,6 +545,7 @@ fun CardEditorHost(
         val cards = cfg.cards
         val next = if (cards.any { it.id == card.id }) cards.map { if (it.id == card.id) card else it } else cards + card
         state.update(cfg.copy(cards = next))
+        state.selectedCardId = card.id
         if (card is ClimateCard && (card.tempAlert.enabled || card.humAlert.enabled)) requestNotifications()
         onDone()
     }
@@ -586,6 +591,28 @@ fun ServersScreen(state: AppState, onBack: () -> Unit, onEdit: (String?) -> Unit
                 }
             }
             Button(onClick = { onEdit(null) }) { Text("Aggiungi un server") }
+            Text("Aspetto", style = MaterialTheme.typography.titleSmall)
+            Picker(
+                "Sfondo",
+                listOf(
+                    "SYSTEM" to "Automatico (come il telefono)",
+                    "LIGHT" to "Sfondo chiaro",
+                    "DARK" to "Sfondo scuro",
+                ),
+                cfg.theme.name,
+            ) { state.update(cfg.copy(theme = ThemeMode.valueOf(it))) }
+            val scaleChoices = listOf(0.85, 1.0, 1.2, 1.4)
+            val scaleNow = scaleChoices.minByOrNull { kotlin.math.abs(it - cfg.textScale) } ?: 1.0
+            Picker(
+                "Dimensione del testo",
+                listOf(
+                    "0.85" to "Piccolo",
+                    "1.0" to "Normale",
+                    "1.2" to "Grande",
+                    "1.4" to "Molto grande",
+                ),
+                scaleNow.toString(),
+            ) { state.update(cfg.copy(textScale = it.toDouble())) }
             SwitchRow("Schermo sempre acceso", cfg.keepScreenOn) { state.update(cfg.copy(keepScreenOn = it)) }
             Text("Quadro ${appVersion(ctx)}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

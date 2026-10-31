@@ -111,13 +111,21 @@ data class WebCard(
     override val id: String,
     override val title: String,
     val url: String,
+    /** Se vero, l'app legge i valori mostrati dalla pagina e li impagina a schede. */
+    val extract: Boolean = true,
 ) : CardConfig
+
+@Serializable
+enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 @Serializable
 data class AppConfig(
     val sources: List<Source> = emptyList(),
     val cards: List<CardConfig> = emptyList(),
     val keepScreenOn: Boolean = false,
+    val theme: ThemeMode = ThemeMode.SYSTEM,
+    /** Moltiplicatore della dimensione del testo (1.0 = normale). */
+    val textScale: Double = 1.0,
 )
 
 object ConfigCodec {

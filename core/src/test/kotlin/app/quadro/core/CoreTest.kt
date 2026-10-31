@@ -105,12 +105,6 @@ class ParsingTest {
 
 class StatsTest {
     @Test
-    fun dewPointMatchesKnownValue() {
-        assertTrue(abs(dewPointC(20.0, 50.0) - 9.3) < 0.2)
-        assertTrue(abs(dewPointC(20.0, 100.0) - 20.0) < 0.05)
-    }
-
-    @Test
     fun dailyKwhRespectsLocalDaysAndDstLength() {
         // 26 ottobre 2025: in Italia il giorno dura 25 ore (fine dell'ora legale).
         val start = millis(2025, 10, 26, 0, 0)
@@ -259,6 +253,67 @@ class EmoncmsTest {
         assertEquals(QrAccount("https://a.example", key), parseAccountQr("https://a.example\n$key"))
         assertNull(parseAccountQr("ciao"))
         assertNull(parseAccountQr(""))
+    }
+}
+
+class KioskTest {
+    private fun frag(text: String, top: Int, left: Int, height: Int, width: Int) =
+        "[\"$text\",$top,$left,$height,$width]"
+
+    private fun json(vararg fragments: String) = fragments.joinToString(",", "[", "]")
+
+    @Test
+    fun twoColumnsLabelsAboveValues() {
+        val r = parseKioskFragments(
+            json(
+                frag("Today", 100, 10, 14, 60), frag("This month", 100, 200, 14, 90),
+                frag("12.3", 120, 10, 30, 40), frag("kWh", 132, 52, 14, 25),
+                frag("340", 120, 200, 30, 40), frag("kWh", 132, 242, 14, 25),
+            ),
+        )
+        assertEquals(listOf(KioskItem("Today", "12.3", "kWh"), KioskItem("This month", "340", "kWh")), r.items)
+    }
+
+    @Test
+    fun labelAndValueOnTheSameRow() {
+        val r = parseKioskFragments(
+            json(frag("Potenza attuale", 50, 10, 16, 120), frag("3.2", 50, 140, 16, 30), frag("kW", 50, 172, 16, 20)),
+        )
+        assertEquals(listOf(KioskItem("Potenza attuale", "3.2", "kW")), r.items)
+    }
+
+    @Test
+    fun valueAboveItsLabel() {
+        val r = parseKioskFragments(
+            json(frag("5.1", 20, 10, 30, 30), frag("kW", 32, 42, 14, 20), frag("Potenza", 55, 10, 14, 50)),
+        )
+        assertEquals(listOf(KioskItem("Potenza", "5.1", "kW")), r.items)
+    }
+
+    @Test
+    fun unitTakenFromParenthesesInLabel() {
+        val r = parseKioskFragments(json(frag("Daily yield (kWh)", 10, 10, 14, 120), frag("12.3", 30, 10, 30, 40)))
+        assertEquals(listOf(KioskItem("Daily yield", "12.3", "kWh")), r.items)
+    }
+
+    @Test
+    fun datesAndUnlabeledNumbersAreIgnored() {
+        val r = parseKioskFragments(json(frag("2025-10-30 14:00", 10, 10, 14, 120), frag("42", 200, 10, 30, 30)))
+        assertTrue(r.items.isEmpty())
+        assertEquals(2, r.lines.size)
+    }
+
+    @Test
+    fun invalidInputGivesEmptyResult() {
+        assertTrue(parseKioskFragments("non è json").items.isEmpty())
+        assertTrue(parseKioskFragments("{}").items.isEmpty())
+    }
+
+    @Test
+    fun unitCategories() {
+        assertEquals(UnitCategory.POWER, unitCategory("kW"))
+        assertEquals(UnitCategory.ENERGY, unitCategory("MWh"))
+        assertEquals(UnitCategory.OTHER, unitCategory("%"))
     }
 }
 

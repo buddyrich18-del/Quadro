@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -98,6 +99,7 @@ fun LineChart(
     val longSpan = tMax - tMin > 36L * 3_600_000L
     val pattern = if (longSpan) "dd/MM" else "HH:mm"
     var touchX by remember { mutableStateOf<Float?>(null) }
+    val k = LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
     val axisStyle = TextStyle(fontSize = 10.sp, color = axisColor)
     val tipStyle = TextStyle(fontSize = 11.sp, color = textColor)
 
@@ -113,10 +115,10 @@ fun LineChart(
                 })
             },
     ) {
-        val left = 40.dp.toPx()
+        val left = 40.dp.toPx() * k
         val right = 8.dp.toPx()
-        val top = 16.dp.toPx()
-        val bottom = 18.dp.toPx()
+        val top = 16.dp.toPx() * k
+        val bottom = 18.dp.toPx() * k
         val w = size.width - left - right
         val h = size.height - top - bottom
         val span = (tMax - tMin).coerceAtLeast(1L).toFloat()
@@ -133,7 +135,7 @@ fun LineChart(
             val v = finalLo + (finalHi - finalLo) * i / 3.0
             val yy = yOf(v)
             drawLine(gridColor, Offset(left, yy), Offset(left + w, yy), strokeWidth = 1f)
-            label(measurer, axisText(v), axisStyle, left - 4.dp.toPx(), yy - 7.dp.toPx(), 1)
+            label(measurer, axisText(v), axisStyle, left - 4.dp.toPx(), yy - 7.dp.toPx() * k, 1)
         }
         val yLabel = top + h + 3.dp.toPx()
         label(measurer, fmtTime(tMin, pattern), axisStyle, left, yLabel, -1)
@@ -197,10 +199,11 @@ fun BarChart(
     val labelStyle = TextStyle(fontSize = 10.sp, color = axisColor)
     val valueStyle = TextStyle(fontSize = 10.sp, color = textColor)
     val showValues = values.size <= 16
+    val k = LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
 
     Canvas(modifier.fillMaxWidth().height(height)) {
-        val top = 16.dp.toPx()
-        val bottom = 16.dp.toPx()
+        val top = 16.dp.toPx() * k
+        val bottom = 16.dp.toPx() * k
         val h = size.height - top - bottom
         val maxV = maxOf(values.max(), 1e-9)
         val minV = minOf(values.min(), 0.0)
@@ -215,11 +218,11 @@ fun BarChart(
             drawRoundRect(color, Offset(x0, yTop), Size(barW, bh), CornerRadius(3.dp.toPx()))
             val cx = i * slot + slot / 2f
             if (showValues) {
-                val ty = if (v >= 0) yTop - 13.dp.toPx() else yTop + bh + 1.dp.toPx()
+                val ty = if (v >= 0) yTop - 13.dp.toPx() * k else yTop + bh + 1.dp.toPx()
                 label(measurer, format(v), valueStyle, cx, ty.coerceAtLeast(0f), 0)
             }
             val lbl = labels.getOrNull(i)
-            if (lbl != null) label(measurer, lbl, labelStyle, cx, size.height - 14.dp.toPx(), 0)
+            if (lbl != null) label(measurer, lbl, labelStyle, cx, size.height - 14.dp.toPx() * k, 0)
         }
     }
 }

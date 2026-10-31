@@ -4,7 +4,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
-import kotlin.math.ln
 
 data class SeriesStats(val min: Double, val max: Double, val avg: Double, val last: Double, val count: Int)
 
@@ -66,15 +65,6 @@ fun todayKwh(hourlyDeltas: List<Point>, nowMs: Long, zone: ZoneId): Double {
 }
 
 fun costOf(kwh: Double, unitCost: Double): Double = kwh * unitCost
-
-/** Punto di rugiada in °C con la formula di Magnus. L'umidità relativa è limitata tra 1 e 100. */
-fun dewPointC(tempC: Double, humidityPct: Double): Double {
-    val a = 17.62
-    val b = 243.12
-    val rh = humidityPct.coerceIn(1.0, 100.0)
-    val gamma = ln(rh / 100.0) + a * tempC / (b + tempC)
-    return b * gamma / (a - gamma)
-}
 
 enum class Comfort { LOW, OK, HIGH }
 
